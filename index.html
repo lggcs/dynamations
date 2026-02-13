@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamations Flash Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+        .links-container {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .swf-link {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background: #0f3460;
+            color: #e94560;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+        .swf-link:hover {
+            background: #e94560;
+            color: #fff;
+            transform: translateX(10px);
+        }
+        .player-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+            padding: 0;
+            margin: 0;
+        }
+        .player-container.active {
+            display: block;
+        }
+        .player-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #rufflePlayer {
+            width: 90vw;
+            height: 85vh;
+            border-radius: 5px;
+        }
+        #rufflePlayer > * {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: rgba(233, 69, 96, 0.9);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .back-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .back-btn:hover {
+            background: rgba(233, 69, 96, 1);
+        }
+        @media (hover: none) {
+            .back-btn {
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
+        #errorMessage {
+            color: #ff6b6b;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+</head>
+<body>
+    <h1>Dynamations Flash Player</h1>
+
+    <div class="links-container" id="linksContainer">
+        <a href="#" class="swf-link" data-swf="chosenEnglish.swf">chosenEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="christmasmessageEnglish.swf">christmasmessageEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="contactEnglish.swf">contactEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="creationEnglish.swf">creationEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="creationsvoiceEnglish.swf">creationsvoiceEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="dynaboxEnglish.swf">dynaboxEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="ladylucycs4.swf">ladylucycs4.swf</a>
+        <a href="#" class="swf-link" data-swf="oneEnglish.swf">oneEnglish.swf</a>
+        <a href="#" class="swf-link" data-swf="watchmakerEnglish.swf">watchmakerEnglish.swf</a>
+    </div>
+
+    <div class="player-container" id="playerContainer">
+        <button class="back-btn" onclick="goBack()">← Back to List</button>
+        <div class="player-wrapper">
+            <div id="rufflePlayer"></div>
+            <div id="errorMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        let ruffle = null;
+        let currentPlayer = null;
+
+        // Initialize Ruffle
+        window.addEventListener('load', () => {
+            if (window.RufflePlayer) {
+                ruffle = window.RufflePlayer.newest();
+                console.log('Ruffle initialized:', ruffle);
+            } else {
+                console.error('Ruffle failed to load');
+                showError('Ruffle failed to load. Please refresh the page.');
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function loadSwf(swfFile) {
+            console.log('Loading SWF:', swfFile);
+
+            const playerContainer = document.getElementById('rufflePlayer');
+            playerContainer.innerHTML = '';
+
+            if (!ruffle) {
+                showError('Ruffle not initialized');
+                return;
+            }
+
+            try {
+                currentPlayer = ruffle.createPlayer();
+                currentPlayer.config = {
+                    autoplay: 'on',
+                    unmuteOverlay: 'visible',
+                    backgroundColor: '#000000',
+                    letterbox: 'on',
+                    maxExecutionDuration: { secs: 15, nanos: 0 },
+                    base: null,
+                    menu: true,
+                    frameRate: null,
+                    quality: 'high',
+                    scale: 'exactfit',
+                    salign: '',
+                    wmode: 'window',
+                    forceAlign: false
+                };
+                playerContainer.appendChild(currentPlayer);
+
+                currentPlayer.addEventListener('loadedmetadata', () => {
+                    console.log('SWF metadata loaded');
+                });
+
+                currentPlayer.addEventListener('loaderror', (event) => {
+                    console.error('Failed to load SWF:', event);
+                    showError('Failed to load: ' + swfFile);
+                });
+
+                currentPlayer.addEventListener('error', (event) => {
+                    console.error("Ruffle error:", event);
+                    showError("Error playing SWF: " + event.message);
+                });
+
+                currentPlayer.load(swfFile);
+                console.log('Player load initiated for:', swfFile);
+            } catch (error) {
+                console.error('Error creating player:', error);
+                showError('Error creating player: ' + error.message);
+            }
+        }
+
+        const links = document.querySelectorAll('.swf-link');
+        const linksContainer = document.getElementById('linksContainer');
+        const playerContainer = document.getElementById('playerContainer');
+        const errorDiv = document.getElementById('errorMessage');
+
+        links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const swfFile = link.getAttribute('data-swf');
+                errorDiv.style.display = 'none';
+                linksContainer.style.display = 'none';
+                playerContainer.classList.add('active');
+                loadSwf(swfFile);
+                playerContainer.addEventListener('mousemove', handleMouseMove);
+            });
+        });
+
+        function handleMouseMove(e) {
+            const backBtn = document.querySelector('.back-btn');
+            const thresholdX = 300;
+            const thresholdY = 300;
+
+            if (e.clientX < thresholdX && e.clientY < thresholdY) {
+                backBtn.classList.add('visible');
+            } else {
+                backBtn.classList.remove('visible');
+            }
+        }
+
+        function goBack() {
+            playerContainer.removeEventListener('mousemove', handleMouseMove);
+            if (currentPlayer) {
+                currentPlayer.remove();
+                currentPlayer = null;
+            }
+            const playerWrapper = document.querySelector('.player-wrapper');
+            playerWrapper.innerHTML = '<div id="rufflePlayer"></div><div id="errorMessage"></div>';
+            playerContainer.classList.remove('active');
+            linksContainer.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
