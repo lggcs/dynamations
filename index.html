@@ -10,8 +10,11 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            padding-bottom: 80px;
             background: #1a1a2e;
             color: #eee;
+            min-height: 100vh;
+            position: relative;
         }
         h1 {
             text-align: center;
@@ -106,6 +109,31 @@
             margin-top: 10px;
             display: none;
         }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0f3460;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #ddd;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1002;
+        }
+        .footer a {
+            color: #e94560;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .footer-text {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
@@ -113,15 +141,15 @@
     <h1>Dynamations Flash Player</h1>
 
     <div class="links-container" id="linksContainer">
-        <a href="#" class="swf-link" data-swf="chosenEnglish.swf">chosenEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="christmasmessageEnglish.swf">christmasmessageEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="contactEnglish.swf">contactEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="creationEnglish.swf">creationEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="creationsvoiceEnglish.swf">creationsvoiceEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="dynaboxEnglish.swf">dynaboxEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="ladylucycs4.swf">ladylucycs4.swf</a>
-        <a href="#" class="swf-link" data-swf="oneEnglish.swf">oneEnglish.swf</a>
-        <a href="#" class="swf-link" data-swf="watchmakerEnglish.swf">watchmakerEnglish.swf</a>
+        <a href="#chosenEnglish.swf" class="swf-link" data-swf="chosenEnglish.swf">chosenEnglish.swf</a>
+        <a href="#christmasmessageEnglish.swf" class="swf-link" data-swf="christmasmessageEnglish.swf">christmasmessageEnglish.swf</a>
+        <a href="#contactEnglish.swf" class="swf-link" data-swf="contactEnglish.swf">contactEnglish.swf</a>
+        <a href="#creationEnglish.swf" class="swf-link" data-swf="creationEnglish.swf">creationEnglish.swf</a>
+        <a href="#creationsvoiceEnglish.swf" class="swf-link" data-swf="creationsvoiceEnglish.swf">creationsvoiceEnglish.swf</a>
+        <a href="#dynaboxEnglish.swf" class="swf-link" data-swf="dynaboxEnglish.swf">dynaboxEnglish.swf</a>
+        <a href="#ladylucycs4.swf" class="swf-link" data-swf="ladylucycs4.swf">ladylucycs4.swf</a>
+        <a href="#oneEnglish.swf" class="swf-link" data-swf="oneEnglish.swf">oneEnglish.swf</a>
+        <a href="#watchmakerEnglish.swf" class="swf-link" data-swf="watchmakerEnglish.swf">watchmakerEnglish.swf</a>
     </div>
 
     <div class="player-container" id="playerContainer">
@@ -132,20 +160,19 @@
         </div>
     </div>
 
+    <footer class="footer">
+        <div class="footer-text">
+            <strong><a href="https://equipu.kids4truth.com/dynamations/" target="_blank" rel="noopener">Kids4Truth</a> Dynamations</strong> © <a href="https://regularbaptistpress.org/about-us/" target="_blank" rel="noopener">Regular Baptist Press</a>. All Rights Reserved.
+        </div>
+    </footer>
+
     <script>
         let ruffle = null;
         let currentPlayer = null;
-
-        // Initialize Ruffle
-        window.addEventListener('load', () => {
-            if (window.RufflePlayer) {
-                ruffle = window.RufflePlayer.newest();
-                console.log('Ruffle initialized:', ruffle);
-            } else {
-                console.error('Ruffle failed to load');
-                showError('Ruffle failed to load. Please refresh the page.');
-            }
-        });
+        let links = null;
+        let linksContainer = null;
+        let playerContainerWrapper = null;
+        let errorDiv = null;
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
@@ -156,8 +183,8 @@
         function loadSwf(swfFile) {
             console.log('Loading SWF:', swfFile);
 
-            const playerContainer = document.getElementById('rufflePlayer');
-            playerContainer.innerHTML = '';
+            const rufflePlayerDiv = document.getElementById('rufflePlayer');
+            rufflePlayerDiv.innerHTML = '';
 
             if (!ruffle) {
                 showError('Ruffle not initialized');
@@ -181,7 +208,7 @@
                     wmode: 'window',
                     forceAlign: false
                 };
-                playerContainer.appendChild(currentPlayer);
+                rufflePlayerDiv.appendChild(currentPlayer);
 
                 currentPlayer.addEventListener('loadedmetadata', () => {
                     console.log('SWF metadata loaded');
@@ -205,21 +232,48 @@
             }
         }
 
-        const links = document.querySelectorAll('.swf-link');
-        const linksContainer = document.getElementById('linksContainer');
-        const playerContainer = document.getElementById('playerContainer');
-        const errorDiv = document.getElementById('errorMessage');
+        // Initialize Ruffle
+        window.addEventListener('load', () => {
+            // Initialize DOM elements
+            links = document.querySelectorAll('.swf-link');
+            linksContainer = document.getElementById('linksContainer');
+            playerContainerWrapper = document.getElementById('playerContainer');
+            errorDiv = document.getElementById('errorMessage');
 
-        links.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const swfFile = link.getAttribute('data-swf');
-                errorDiv.style.display = 'none';
-                linksContainer.style.display = 'none';
-                playerContainer.classList.add('active');
-                loadSwf(swfFile);
-                playerContainer.addEventListener('mousemove', handleMouseMove);
+            // Set up link click handlers
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const swfFile = link.getAttribute('data-swf');
+                    window.location.hash = swfFile;
+                    errorDiv.style.display = 'none';
+                    linksContainer.style.display = 'none';
+                    playerContainerWrapper.classList.add('active');
+                    loadSwf(swfFile);
+                    playerContainerWrapper.addEventListener('mousemove', handleMouseMove);
+                });
             });
+
+            if (window.RufflePlayer) {
+                ruffle = window.RufflePlayer.newest();
+                console.log('Ruffle initialized:', ruffle);
+
+                // Check if URL has a hash with SWF file
+                const hash = window.location.hash.substring(1);
+                if (hash && hash.endsWith('.swf')) {
+                    const linkElement = document.querySelector(`[data-swf="${hash}"]`);
+                    if (linkElement) {
+                        errorDiv.style.display = 'none';
+                        linksContainer.style.display = 'none';
+                        playerContainerWrapper.classList.add('active');
+                        loadSwf(hash);
+                        playerContainerWrapper.addEventListener('mousemove', handleMouseMove);
+                    }
+                }
+            } else {
+                console.error('Ruffle failed to load');
+                showError('Ruffle failed to load. Please refresh the page.');
+            }
         });
 
         function handleMouseMove(e) {
@@ -235,14 +289,15 @@
         }
 
         function goBack() {
-            playerContainer.removeEventListener('mousemove', handleMouseMove);
+            window.history.pushState('', document.title, window.location.pathname + window.location.search);
+            playerContainerWrapper.removeEventListener('mousemove', handleMouseMove);
             if (currentPlayer) {
                 currentPlayer.remove();
                 currentPlayer = null;
             }
             const playerWrapper = document.querySelector('.player-wrapper');
             playerWrapper.innerHTML = '<div id="rufflePlayer"></div><div id="errorMessage"></div>';
-            playerContainer.classList.remove('active');
+            playerContainerWrapper.classList.remove('active');
             linksContainer.style.display = 'block';
         }
     </script>
