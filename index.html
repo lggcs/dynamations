@@ -328,6 +328,32 @@
             }
         });
 
+        // Handle hash changes (back/forward browser navigation)
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash && hash.endsWith('.swf')) {
+                // Navigate to a specific SWF
+                errorDiv.style.display = 'none';
+                linksContainer.style.display = 'none';
+                playerContainerWrapper.classList.add('active');
+                loadSwf(hash);
+                playerContainerWrapper.addEventListener('mousemove', handleMouseMove);
+            } else {
+                // Return to list
+                playerContainerWrapper.removeEventListener('mousemove', handleMouseMove);
+                if (currentPlayer) {
+                    currentPlayer.remove();
+                    currentPlayer = null;
+                }
+                isPlaying = true;
+                updatePlayPauseButton();
+                const playerWrapper = document.querySelector('.player-wrapper');
+                playerWrapper.innerHTML = '<div id="rufflePlayer"></div><div id="errorMessage"></div>';
+                playerContainerWrapper.classList.remove('active');
+                linksContainer.style.display = 'block';
+            }
+        });
+
         function handleMouseMove(e) {
             const backBtn = document.querySelector('.back-btn');
             const playPauseBtn = document.getElementById('playPauseBtn');
@@ -356,18 +382,7 @@
         }
 
         function goBack() {
-            window.history.pushState('', document.title, window.location.pathname + window.location.search);
-            playerContainerWrapper.removeEventListener('mousemove', handleMouseMove);
-            if (currentPlayer) {
-                currentPlayer.remove();
-                currentPlayer = null;
-            }
-            isPlaying = true;
-            updatePlayPauseButton();
-            const playerWrapper = document.querySelector('.player-wrapper');
-            playerWrapper.innerHTML = '<div id="rufflePlayer"></div><div id="errorMessage"></div>';
-            playerContainerWrapper.classList.remove('active');
-            linksContainer.style.display = 'block';
+            window.location.hash = '';
         }
     </script>
 </body>
