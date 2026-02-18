@@ -369,19 +369,33 @@
 
         function cleanupPlayer() {
             playerContainerWrapper.removeEventListener('mousemove', handleMouseMove);
+
+            // Pause current player if it exists
             if (currentPlayer) {
                 try {
                     currentPlayer.pause();
                 } catch (e) {
                     console.log('Error pausing player:', e);
                 }
-                try {
-                    currentPlayer.remove();
-                } catch (e) {
-                    console.log('Error removing player:', e);
-                }
-                currentPlayer = null;
             }
+
+            // Remove ALL ruffle-web elements from the DOM
+            const allRufflePlayers = document.querySelectorAll('ruffle-web');
+            allRufflePlayers.forEach(player => {
+                try {
+                    player.remove();
+                } catch (e) {
+                    console.log('Error removing ruffle-web element:', e);
+                }
+            });
+
+            // Clear the player container completely
+            const rufflePlayerDiv = document.getElementById('rufflePlayer');
+            if (rufflePlayerDiv) {
+                rufflePlayerDiv.innerHTML = '';
+            }
+
+            currentPlayer = null;
             isPlaying = true;
             updatePlayPauseButton();
         }
