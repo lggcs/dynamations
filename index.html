@@ -309,6 +309,10 @@
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const swfFile = link.getAttribute('data-swf');
+
+                    // Clean up any existing player first
+                    cleanupPlayer();
+
                     window.location.hash = swfFile;
                     errorDiv.style.display = 'none';
                     linksContainer.style.display = 'none';
@@ -344,6 +348,9 @@
         window.addEventListener('hashchange', () => {
             const hash = window.location.hash.substring(1);
             if (hash && hash.endsWith('.swf')) {
+                // Clean up previous player first
+                cleanupPlayer();
+
                 // Navigate to a specific SWF
                 errorDiv.style.display = 'none';
                 linksContainer.style.display = 'none';
@@ -352,19 +359,32 @@
                 playerContainerWrapper.addEventListener('mousemove', handleMouseMove);
             } else {
                 // Return to list
-                playerContainerWrapper.removeEventListener('mousemove', handleMouseMove);
-                if (currentPlayer) {
-                    currentPlayer.remove();
-                    currentPlayer = null;
-                }
-                isPlaying = true;
-                updatePlayPauseButton();
+                cleanupPlayer();
                 const playerWrapper = document.querySelector('.player-wrapper');
                 playerWrapper.innerHTML = '<div id="rufflePlayer"></div><div id="errorMessage"></div>';
                 playerContainerWrapper.classList.remove('active');
                 linksContainer.style.display = 'block';
             }
         });
+
+        function cleanupPlayer() {
+            playerContainerWrapper.removeEventListener('mousemove', handleMouseMove);
+            if (currentPlayer) {
+                try {
+                    currentPlayer.pause();
+                } catch (e) {
+                    console.log('Error pausing player:', e);
+                }
+                try {
+                    currentPlayer.remove();
+                } catch (e) {
+                    console.log('Error removing player:', e);
+                }
+                currentPlayer = null;
+            }
+            isPlaying = true;
+            updatePlayPauseButton();
+        }
 
         function handleMouseMove(e) {
             const backBtn = document.querySelector('.back-btn');
