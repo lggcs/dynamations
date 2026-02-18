@@ -91,6 +91,23 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
+        .play-pause-btn {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 30px;
+            background: rgba(233, 69, 96, 0.9);
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
         .back-btn.visible {
             opacity: 1;
             pointer-events: auto;
@@ -98,8 +115,19 @@
         .back-btn:hover {
             background: rgba(233, 69, 96, 1);
         }
+        .play-pause-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .play-pause-btn:hover {
+            background: rgba(233, 69, 96, 1);
+        }
         @media (hover: none) {
             .back-btn {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .play-pause-btn {
                 opacity: 1;
                 pointer-events: auto;
             }
@@ -154,6 +182,7 @@
 
     <div class="player-container" id="playerContainer">
         <button class="back-btn" onclick="goBack()">← Back to List</button>
+        <button class="play-pause-btn" id="playPauseBtn" onclick="togglePlayPause()">⏸ Pause</button>
         <div class="player-wrapper">
             <div id="rufflePlayer"></div>
             <div id="errorMessage"></div>
@@ -173,6 +202,7 @@
         let linksContainer = null;
         let playerContainerWrapper = null;
         let errorDiv = null;
+        let isPlaying = true;
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
@@ -226,9 +256,31 @@
 
                 currentPlayer.load(swfFile);
                 console.log('Player load initiated for:', swfFile);
+                isPlaying = true;
+                updatePlayPauseButton();
             } catch (error) {
                 console.error('Error creating player:', error);
                 showError('Error creating player: ' + error.message);
+            }
+        }
+
+        function togglePlayPause() {
+            if (!currentPlayer) return;
+
+            if (isPlaying) {
+                currentPlayer.pause();
+                isPlaying = false;
+            } else {
+                currentPlayer.play();
+                isPlaying = true;
+            }
+            updatePlayPauseButton();
+        }
+
+        function updatePlayPauseButton() {
+            const btn = document.getElementById('playPauseBtn');
+            if (btn) {
+                btn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
             }
         }
 
@@ -278,13 +330,28 @@
 
         function handleMouseMove(e) {
             const backBtn = document.querySelector('.back-btn');
-            const thresholdX = 300;
-            const thresholdY = 300;
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const thresholdBackX = 300;
+            const thresholdBackY = 300;
+            const thresholdPlayMargin = 150;
 
-            if (e.clientX < thresholdX && e.clientY < thresholdY) {
+            // Handle back button (top-left)
+            if (e.clientX < thresholdBackX && e.clientY < thresholdBackY) {
                 backBtn.classList.add('visible');
             } else {
                 backBtn.classList.remove('visible');
+            }
+
+            // Handle play-pause button (bottom-center)
+            const containerWidth = window.innerWidth;
+            const containerHeight = window.innerHeight;
+            const btnBottom = 80; // Same as CSS bottom value
+
+            if (e.clientY > containerHeight - btnBottom - thresholdPlayMargin &&
+                Math.abs(e.clientX - containerWidth / 2) < thresholdPlayMargin) {
+                playPauseBtn.classList.add('visible');
+            } else {
+                playPauseBtn.classList.remove('visible');
             }
         }
 
@@ -295,6 +362,8 @@
                 currentPlayer.remove();
                 currentPlayer = null;
             }
+            isPlaying = true;
+            updatePlayPauseButton();
             const playerWrapper = document.querySelector('.player-wrapper');
             playerWrapper.innerHTML = '<div id="rufflePlayer"></div><div id="errorMessage"></div>';
             playerContainerWrapper.classList.remove('active');
